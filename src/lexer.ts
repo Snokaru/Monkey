@@ -73,7 +73,6 @@ export class Lexer {
     private getNextToken(): Token {
         this.skipWhitespace();
         const currentCharacter: string = this.eat();
-        //console.log("CURRENT CHARACTER IS: ", currentCharacter, " AT POS: ", this.position);
 
         let token: Token;
         switch (currentCharacter) {

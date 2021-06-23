@@ -127,13 +127,10 @@ export class Parser {
     private parseStatement(): StatementNode {
         switch (this.peek().type) {
             case TokenType.LET:
-                console.log("PARSING LET STATEMENT");
                 return this.parseLetStatement();
             case TokenType.RETURN:
-                console.log("PARSING RETURN STATEMENT");
                 return this.parseReturnStatement();
             default:
-                console.log("PARSING EXPRESSION STATEMENT");
                 return this.parseExpressionStatement();
         }
     }
