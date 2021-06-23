@@ -13,6 +13,15 @@ function isAlphaNumeric(character: string): boolean {
 }
 
 export class Lexer {
+    private static readonly KEYWORDS: Record<string, TokenType | undefined> = {
+        "fn": TokenType.FUNCTION,
+        "let": TokenType.LET,
+        "return": TokenType.RETURN,
+        "if": TokenType.IF,
+        "else": TokenType.ELSE,
+        "true": TokenType.TRUE,
+        "false": TokenType.FALSE
+    };
     private input: string;
     private position: number;
 
@@ -21,18 +30,8 @@ export class Lexer {
         this.position = -1;
     }
 
-    private lookupIdentifier(literal: string): TokenType {
-        const keywords = {
-            "fn": TokenType.FUNCTION,
-            "let": TokenType.LET,
-            "return": TokenType.RETURN,
-            "if": TokenType.IF,
-            "else": TokenType.ELSE,
-            "true": TokenType.TRUE,
-            "false": TokenType.FALSE
-        };
-
-        return keywords[literal] || TokenType.IDENT;
+    public lookupIdentifier(literal: string): TokenType {
+        return Lexer.KEYWORDS[literal] || TokenType.IDENT;
     }
 
     private eat(): string {
