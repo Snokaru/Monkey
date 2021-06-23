@@ -15,122 +15,100 @@ import {
     CallExpressionNode
 } from "./ast";
 
+const indent = (target: AstPrinter, _propertyKey: string, descriptor: PropertyDescriptor) => {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = function(...args: unknown[]) {
+        const self = this as AstPrinter;
+        self.indent += 2;
+        self.spacing = " ".repeat(self.indent);
+        let result = originalMethod.apply(this, args);
+        self.indent -= 2;
+        return result;
+    }
+}
 export class AstPrinter extends Visitor<string> {
     indent: number = -2;
+    spacing: string = "";
 
+    @indent
     public visitLetStatementNode(node: LetStatementNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}LetStatementNode\n${spacing + "  "}Identifier ${node.identifier}\n${node.expression.accept(this)}`  
-        this.indent -= 2;
-
+        let result: string = `${this.spacing}LetStatementNode\n${this.spacing + "  "}Identifier ${node.identifier}\n${node.expression.accept(this)}`  
         return result;
     }
 
+    @indent
     public visitReturnStatementNode(node: ReturnStatementNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}ReturnStatementNode\n${node.expression.accept(this)}`; 
-        this.indent -= 2;
-
+        let result: string = `${this.spacing}ReturnStatementNode\n${node.expression.accept(this)}`; 
         return result;
     }
 
+    @indent
     public visitExpressionStatementNode(node: ExpressionStatementNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}ExpressionStatementNode\n${node.expression.accept(this)}`;
-        this.indent -= 2;
-
+        let result: string = `${this.spacing}ExpressionStatementNode\n${node.expression.accept(this)}`;
         return result;
     }
 
+    @indent
     public visitProgramNode(node: ProgramNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}ProgramNode\n${node.statements.map(statement => statement.accept(this)).join("\n")}`
-        this.indent -= 2;
+        let result: string = `${this.spacing}ProgramNode\n${node.statements.map(statement => statement.accept(this)).join("\n")}`;
         return result;
     }
 
-
+    @indent
     public visitIfExpressionNode(node: IfExpressionNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}IfExpressionNode\n${node.condition.accept(this)}\n${node.consequence.accept(this)}`
+        let result: string = `${this.spacing}IfExpressionNode\n${node.condition.accept(this)}\n${node.consequence.accept(this)}`
         if (node.alternative)
             result += node.alternative.accept(this);
-        this.indent -= 2;
-
         return result;
     }
 
+    @indent
     public visitBlockStatementNode(node: BlockStatementNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}BlockStatementNode\n${node.statements.map(statement => statement.accept(this)).join("\n")}`
-        this.indent -= 2;
-
+        let result: string = `${this.spacing}BlockStatementNode\n${node.statements.map(statement => statement.accept(this)).join("\n")}`
         return result;
     }
 
+    @indent
     public visitIdentifierNode(node: IdentifierNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}IdentifierNode\n${spacing + "  "}Identifier ${node.identifier}`;
-        this. indent -= 2;
-
+        let result: string = `${this.spacing}IdentifierNode\n${this.spacing + "  "}Identifier ${node.identifier}`;
         return result;
     }
 
+    @indent
     public visitIntegerNode(node: IntegerNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}IntegerNode\n${spacing + "  "}Value ${node.value}`;
-        this.indent -= 2;
-
+        let result: string = `${this.spacing}IntegerNode\n${this.spacing + "  "}Value ${node.value}`;
         return result;
     }
 
+    @indent
     public visitPrefixExpressionNode(node: PrefixExpressionNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}PrefixExpressionNode\n${spacing + "  "}Operator ${node.operator}\n${node.right.accept(this)}`;
-        this.indent -= 2;
-        
+        let result: string = `${this.spacing}PrefixExpressionNode\n${this.spacing + "  "}Operator ${node.operator}\n${node.right.accept(this)}`;
         return result;
     }
 
+    @indent
     public visitInfixExpressionNode(node: InfixExpressionNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}InfixExpressionNode\n${node.left.accept(this)}\n${spacing + "  "}Operator ${node.operator}\n${node.right.accept(this)}`;
-        this.indent -= 2;
+        let result: string = `${this.spacing}InfixExpressionNode\n${node.left.accept(this)}\n${this.spacing + "  "}Operator ${node.operator}\n${node.right.accept(this)}`;
         return result;
     }
 
+    @indent
     public visitBooleanNode(node: BooleanNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}BooleanNode\n${spacing + "  "}Value ${node.value}`;
-        this.indent -= 2;
+        let result: string = `${this.spacing}BooleanNode\n${this.spacing + "  "}Value ${node.value}`;
         return result;
     }
     
+    @indent
     public visitFunctionLiteralNode(node: FunctionLiteralNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}FunctionLiteralNode\n${spacing + "  "}Parameters ${node.parameters.map(p => p.identifier).join(", ")}\n`
+        let result: string = `${this.spacing}FunctionLiteralNode\n${this.spacing + "  "}Parameters ${node.parameters.map(p => p.identifier).join(", ")}\n`;
         result += node.body.accept(this);
-        this.indent -= 2;
         return result;
     }
 
+    @indent
     public visitCallExpressionNode(node: CallExpressionNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}CallExpressionNode\n${node.fn.accept(this)}\n${node.args.map(arg => arg.accept(this)).join("\n")}`;
-        this.indent -= 2;
+        let result: string = `${this.spacing}CallExpressionNode\n${node.fn.accept(this)}\n${node.args.map(arg => arg.accept(this)).join("\n")}`;
         return result;
     }
 }
