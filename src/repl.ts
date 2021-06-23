@@ -18,16 +18,14 @@ export async function run(): Promise<void> {
         const lexer: Lexer = new Lexer(line);
         const tokens: Token[] = lexer.getTokens()
         const parser: Parser = new Parser(tokens);
-       // try {
+        try {
             const program: ProgramNode = parser.parse();
             const printer: AstPrinter = new AstPrinter();
             console.log(program.accept(printer));
-        /*
         } catch (error) {
             console.log("Failed to parse the given tokens.");
             console.log(error.message);
         }
-        */
 
         rl.prompt();
     }
