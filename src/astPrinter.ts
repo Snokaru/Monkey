@@ -1,6 +1,5 @@
 import { 
     ExpressionStatementNode,
-    ExpressionNode,
     LetStatementNode,
     ProgramNode,
     ReturnStatementNode,
@@ -43,14 +42,6 @@ export class AstPrinter extends Visitor<string> {
         let result: string = `${spacing}ExpressionStatementNode\n${node.expression.accept(this)}`;
         this.indent -= 2;
 
-        return result;
-    }
-
-    public visitExpressionNode(node: ExpressionNode): string {
-        this.indent += 2;
-        let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}ExpressionNode`;
-        this.indent -= 2;
         return result;
     }
 
@@ -138,7 +129,7 @@ export class AstPrinter extends Visitor<string> {
     public visitCallExpressionNode(node: CallExpressionNode): string {
         this.indent += 2;
         let spacing: string = " ".repeat(this.indent);
-        let result: string = `${spacing}CallExpressionNode\n${node.function.accept(this)}\n${node.arguments.map(arg => arg.accept(this)).join("\n")}`;
+        let result: string = `${spacing}CallExpressionNode\n${node.fn.accept(this)}\n${node.args.map(arg => arg.accept(this)).join("\n")}`;
         this.indent -= 2;
         return result;
     }

@@ -1,7 +1,7 @@
 import readline = require("readline");
 import { Token } from "./token";
 import { Lexer } from "./lexer";
-import { Parser } from "./parser";
+import { Parser  } from "./parser";
 import { ProgramNode } from "./ast";
 import { AstPrinter } from "./astPrinter";
 
@@ -18,10 +18,16 @@ export async function run(): Promise<void> {
         const lexer: Lexer = new Lexer(line);
         const tokens: Token[] = lexer.getTokens()
         const parser: Parser = new Parser(tokens);
-        const program: ProgramNode = parser.parse();
-        const printer: AstPrinter = new AstPrinter();
-
-        console.log(program.accept(printer));
+       // try {
+            const program: ProgramNode = parser.parse();
+            const printer: AstPrinter = new AstPrinter();
+            console.log(program.accept(printer));
+        /*
+        } catch (error) {
+            console.log("Failed to parse the given tokens.");
+            console.log(error.message);
+        }
+        */
 
         rl.prompt();
     }

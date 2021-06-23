@@ -27,24 +27,31 @@ enum Precedence {
     CALL
 }
 
+export class ParseError extends Error {
+    constructor(token: Token, expected: TokenType[ ], tokenIndex: number) {
+        super(`PARSER: Failed to parse on token ${tokenIndex}, (expected: ${expected.join(",")}; received: ${token.type})`);
+        this.name = "ParserError";
+    }
+}
 
 export class Parser {
-    static precedences = {
-        [TokenType.EQ]:     Precedence.EQUALS,
-        [TokenType.NEQ]:    Precedence.EQUALS,
-        [TokenType.LT]:     Precedence.LESSGREATER,
-        [TokenType.GT]:     Precedence.LESSGREATER,
-        [TokenType.PLUS]:   Precedence.SUM,
-        [TokenType.MINUS]: Precedence.SUM,
-        [TokenType.ASTERISK]: Precedence.PRODUCT,
-        [TokenType.SLASH]: Precedence.PRODUCT,
-        [TokenType.LPAREN]: Precedence.CALL,
+    static readonly PRECEDENCES = {
+        [TokenType.EQ]:         Precedence.EQUALS,
+        [TokenType.NEQ]:        Precedence.EQUALS,
+        [TokenType.LT]:         Precedence.LESSGREATER,
+        [TokenType.GT]:         Precedence.LESSGREATER,
+        [TokenType.PLUS]:       Precedence.SUM,
+        [TokenType.MINUS]:      Precedence.SUM,
+        [TokenType.ASTERISK]:   Precedence.PRODUCT,
+        [TokenType.SLASH]:      Precedence.PRODUCT,
+        [TokenType.LPAREN]:     Precedence.CALL,
     }
+
     tokens: Token[];
     errors: string[] = [];
     current: number;
     prefixParseFunctions: Map<TokenType, () => ExpressionNode> = new Map<TokenType, () => ExpressionNode>();
-    infixParseFunctions: Map<TokenType, () => ExpressionNode> = new Map<TokenType, () => ExpressionNode>();
+    infixParseFunctions: Map<TokenType, (left: ExpressionNode) => ExpressionNode> = new Map<TokenType, (left: ExpressionNode) => ExpressionNode>();
 
     public constructor(tokens: Token[]) {
         this.tokens = tokens;
@@ -81,23 +88,27 @@ export class Parser {
     }
     
     private peekPrecedence(): Precedence {
-        return Parser.precedences[this.tokens[this.current + 1].type] || Precedence.LOWEST;
+        let tokenType = this.tokens[this.current + 1].type as keyof typeof Parser.PRECEDENCES;
+        return Parser.PRECEDENCES[tokenType] || Precedence.LOWEST;
     }
 
     private peekNextPrecedence(): Precedence {
-        return Parser.precedences[this.tokens[this.current + 2].type];
+        let tokenType = this.tokens[this.current + 2].type as keyof typeof Parser.PRECEDENCES;
+        return Parser.PRECEDENCES[tokenType] || Precedence.LOWEST;
     }
 
     private registerInfix(type: TokenType, fn: (left: ExpressionNode) => ExpressionNode) {
-        this.infixParseFunctions[type] = fn;
+        this.infixParseFunctions.set(type, fn);
     }
 
     private registerPrefix(type: TokenType, fn: () => ExpressionNode) {
-        this.prefixParseFunctions[type] = fn;
+        this.prefixParseFunctions.set(type, fn);
     }
     
-    private expect(tokenTypes: TokenType[]): boolean {
-        return tokenTypes.includes(this.peek().type);
+    private expect(expected: TokenType[]): Token {
+        if (!expected.includes(this.peek().type))
+            throw new ParseError(this.peek(), expected, this.current + 1);
+        return this.eat();
     }
 
     public parse(): ProgramNode {
@@ -105,268 +116,194 @@ export class Parser {
     }
 
     private parseProgram(): ProgramNode {
-        let program: ProgramNode = new ProgramNode();
+        let statements: StatementNode[] = [];
         while (this.peek().type !== TokenType.EOF) {
             let stmt: StatementNode = this.parseStatement();
-            if (!stmt) {
-                throw new Error("Parse error!");
-            }
-            program.statements.push(stmt);
+            statements.push(stmt);
         }
-        return program;
+        return new ProgramNode(statements);
     }
     
     private parseStatement(): StatementNode {
         switch (this.peek().type) {
             case TokenType.LET:
+                console.log("PARSING LET STATEMENT");
                 return this.parseLetStatement();
             case TokenType.RETURN:
+                console.log("PARSING RETURN STATEMENT");
                 return this.parseReturnStatement();
             default:
+                console.log("PARSING EXPRESSION STATEMENT");
                 return this.parseExpressionStatement();
         }
     }
 
     private parseExpressionStatement(): ExpressionStatementNode {
-        let stmt = new ExpressionStatementNode();
-        stmt.expression = this.parseExpression(Precedence.LOWEST);
+        let expression = this.parseExpression(Precedence.LOWEST);
 
         if (this.peek().type === TokenType.SEMICOLON)
             this.eat();
 
-        return stmt;
+        return new ExpressionStatementNode(expression);
     }
 
     private parseReturnStatement(): ReturnStatementNode {
-        let stmt = new ReturnStatementNode();
+        this.expect([TokenType.RETURN]);
+        let expression = this.parseExpression(Precedence.LOWEST);
+        this.expect([TokenType.SEMICOLON]);
 
-        if (!this.expect([TokenType.RETURN]))
-            return null;
-        this.eat();
-
-        stmt.expression = this.parseExpression(Precedence.LOWEST);
-
-        if (!this.expect([TokenType.SEMICOLON]))
-            return null;
-        this.eat();
-        
-        return stmt;
+        return new ReturnStatementNode(expression);
     }
 
     private parseLetStatement(): LetStatementNode {
-        let stmt: LetStatementNode = new LetStatementNode();
-        
-        if (!this.expect([TokenType.LET]))
-            return null;
-        this.eat();
+        this.expect([TokenType.LET]);
+        let ident = this.expect([TokenType.IDENT]);
+        this.expect([TokenType.ASSIGN]);
 
-        if (!this.expect([TokenType.IDENT]))
-            return null;
-        const token: Token = this.eat(); 
-        stmt.identifier = token.literal;
+        let expression = this.parseExpression(Precedence.LOWEST);
+        this.expect([TokenType.SEMICOLON])
 
-        if (!this.expect([TokenType.ASSIGN]))
-            return null;
-        this.eat();
-        
-        stmt.expression = this.parseExpression(Precedence.LOWEST);
-
-        if (!this.expect([TokenType.SEMICOLON]))
-            return null;
-        this.eat();
-
-        return stmt;
+        return new LetStatementNode(ident.literal, expression);
     }
 
     private parseExpression(prec: Precedence): ExpressionNode {
-        let prefixFunction: () => ExpressionNode = this.prefixParseFunctions[this.peek().type];
-        console.log(this.peek().type);
-        console.log(prefixFunction);
-        if (!prefixFunction) {
-            return null;
-        }
+        let prefixFunction = this.prefixParseFunctions.get(this.peek().type);
+        if (!prefixFunction)
+            throw new ParseError(this.peek(), Array.from(this.prefixParseFunctions.keys()), this.current + 1);
+       
         let expr = prefixFunction();
 
         while (this.peek().type !== TokenType.SEMICOLON && prec < this.peekPrecedence()) {
-            let infixFunction: (left: ExpressionNode) => ExpressionNode = this.infixParseFunctions[this.peek().type];
-            if (!infixFunction) {
-                return null;
-            }
+            let infixFunction = this.infixParseFunctions.get(this.peek().type);
+            if (!infixFunction) 
+                throw new ParseError(this.peek(), Array.from(this.infixParseFunctions.keys()), this.current + 1);
             expr = infixFunction(expr);
         } 
         return expr; 
     }
 
     private parsePrefixExpression(): PrefixExpressionNode {
-        let expr: PrefixExpressionNode = new PrefixExpressionNode();
-        
-        if (!this.expect([TokenType.MINUS, TokenType.BANG])) {
-            return null;
-        }
-        expr.operator = this.eat().literal;
-        expr.right = this.parseExpression(Precedence.PREFIX);
-        return expr;
+        let operator = this.expect([TokenType.MINUS, TokenType.BANG]).literal;
+        let right = this.parseExpression(Precedence.PREFIX);
+        return new PrefixExpressionNode(operator, right);
     }
 
     private parseInfixExpression(left: ExpressionNode): InfixExpressionNode {
-        let expression: InfixExpressionNode = new InfixExpressionNode();
-        expression.left = left;
-
         let precedence: Precedence = this.peekPrecedence();
-        expression.operator = this.eat().literal;
+        let operator = this.eat().literal;
+        let right = this.parseExpression(precedence);
 
-
-        expression.right = this.parseExpression(precedence);
-
-        return expression;
-
+        return new InfixExpressionNode(left, operator, right as ExpressionNode);
     }
     
     private parseIdentifier(): IdentifierNode {
-        let ident: IdentifierNode = new IdentifierNode();
-        ident.identifier = this.eat().literal;
-        return ident;
+        let ident = this.expect([TokenType.IDENT]).literal;
+        return new IdentifierNode(ident);
     }
     
     private parseInteger(): IntegerNode {
-        let integer: IntegerNode = new IntegerNode;
-        integer.value = parseInt(this.eat().literal);
-        return integer;
+        let token = this.expect([TokenType.INT]);
+        let value = parseInt(token.literal);
+        return new IntegerNode(value);
     }
 
     private parseBoolean(): BooleanNode {
-        let bool = new BooleanNode();
-        let type: TokenType = this.eat().type;
+        let token = this.expect([TokenType.TRUE, TokenType.FALSE]);
+        let value: boolean = false;
 
-        if (type === TokenType.TRUE) {
-            bool.value = true;
-        }
-        else {
-            bool.value = false;
-        }
+        if (token.type === TokenType.TRUE) {
+            value = true;
+        } else if (token.type === TokenType.FALSE) {
+            value = false;
+        } 
 
-        return bool;
+        return new BooleanNode(value);
     }
 
     private parseGroupExpression(): ExpressionNode {
-        this.eat();
-
+        this.expect([TokenType.LPAREN]);
         let expr = this.parseExpression(Precedence.LOWEST);
+        this.expect([TokenType.RPAREN]);
 
-        if (!this.expect([TokenType.RPAREN])) {
-            return null;
-        }
-
-        this.eat();
         return expr;
     }
 
     private parseBlockStatement(): BlockStatementNode {
-        let blockStmt = new BlockStatementNode();
+        let statements: StatementNode[] = [];
         
-        if (!this.expect([TokenType.LBRACE]))
-            return null;
+        this.expect([TokenType.LBRACE]);
 
-        this.eat();
-
-        while (!this.expect([TokenType.RBRACE])) {
-            blockStmt.statements.push(this.parseStatement());
+        while (this.peek().type !== TokenType.RBRACE) {
+            let nextStatement = this.parseStatement();
+            statements.push(nextStatement);
         }
         this.eat();
 
-        return blockStmt;
+        return new BlockStatementNode(statements);
     }
 
-    private parseIfExpression(): IfExpressionNode {
-        let ifExpr = new IfExpressionNode();
+    private parseIfExpression(): IfExpressionNode  {
 
-        if (!this.expect([TokenType.IF]))
-            return null;
-        this.eat();
+        this.expect([TokenType.IF]);
         
-        ifExpr.condition = this.parseExpression(Precedence.LOWEST);
-        ifExpr.consequence = this.parseBlockStatement();
+        let condition = this.parseExpression(Precedence.LOWEST);
+        let consequence = this.parseBlockStatement();
+        let alternative = null;
 
-        if (!this.expect([TokenType.ELSE])) {
-            ifExpr.alternative = null;
-            return ifExpr;
+        if (this.peek().type === TokenType.ELSE) {
+            this.eat();
+            alternative = this.parseBlockStatement();
         }
-        this.eat();
         
-        ifExpr.alternative = this.parseBlockStatement();
-        
-        return ifExpr;
+        return new IfExpressionNode(condition, consequence, alternative);
     }
 
     private parseFunctionLiteral(): FunctionLiteralNode {
-        let functionLiteral = new FunctionLiteralNode();
-        if (!this.expect([TokenType.FUNCTION]))
-            return null;
-        this.eat();
+        this.expect([TokenType.FUNCTION]);
 
-        functionLiteral.parameters = this.parseFunctionParameters();
-        functionLiteral.body = this.parseBlockStatement();
-        return functionLiteral;
+        let parameters = this.parseFunctionParameters();
+        let body = this.parseBlockStatement();
+        return new FunctionLiteralNode(parameters, body);
     }
     
     private parseFunctionParameters(): IdentifierNode[] {
         let identifiers: IdentifierNode[] = [];
-        if (this.peek().type !== TokenType.LPAREN) {
-            return null;
-        }
-        this.eat();
+        this.expect([TokenType.LPAREN]);
         
         if (this.peek().type === TokenType.IDENT) {
-            let ident: IdentifierNode = this.parseIdentifier();
-            identifiers.push(ident);
+            identifiers.push(this.parseIdentifier());
         }
 
         while (this.peek().type === TokenType.COMMA) {
             this.eat();
-
-            if (!this.expect([TokenType.IDENT])) {
-                return null;
-            }
-
-            let ident: IdentifierNode = this.parseIdentifier();
-            identifiers.push(ident);
+            identifiers.push(this.parseIdentifier());
         }
 
-        if (this.peek().type !== TokenType.RPAREN)
-            return null;
-        this.eat();
-        
+        this.expect([TokenType.RPAREN]);
         return identifiers; 
     }
 
     private parseCallExpression(left: ExpressionNode): CallExpressionNode {
-        let callExpr = new CallExpressionNode();
-        callExpr.function = left;
+        let fn = left;
+        let args: ExpressionNode[] = [];
 
-        if (!this.expect([TokenType.LPAREN])) {
-            return null;
-        }
-        this.eat();
+        this.expect([TokenType.LPAREN]);
 
         if (this.peek().type === TokenType.RPAREN) {
             this.eat();
-            callExpr.arguments = null;
-            return callExpr;
+            return new CallExpressionNode(fn, args);
         }
 
-        callExpr.arguments.push(this.parseExpression(Precedence.LOWEST)); 
+        let newArg = this.parseExpression(Precedence.LOWEST);
+        args.push(newArg);
 
-        while (this.expect([TokenType.COMMA])) {
+        while (this.peek().type === TokenType.COMMA) {
             this.eat();
-            callExpr.arguments.push(this.parseExpression(Precedence.LOWEST));
+            args.push(this.parseExpression(Precedence.LOWEST));
         }
 
-        if (!this.expect([TokenType.RPAREN])) {
-            return null;
-        }
-        this.eat();
+        this.expect([TokenType.RPAREN]);
 
-        return callExpr;
+        return new CallExpressionNode(fn, args);
     }
-
 }
