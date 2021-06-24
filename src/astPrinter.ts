@@ -15,7 +15,7 @@ import {
     CallExpressionNode
 } from "./ast";
 
-const indent = (target: AstPrinter, _propertyKey: string, descriptor: PropertyDescriptor) => {
+const indent = (_target: AstPrinter, _propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
 
     descriptor.value = function(...args: unknown[]) {
