@@ -78,7 +78,6 @@ export class Parser {
         this.registerInfix(TokenType.LPAREN, (left: ExpressionNode): CallExpressionNode => this.parseCallExpression(left));
     }
 
- 
     private peek(): Token {
         return this.tokens[this.current + 1];
     }
