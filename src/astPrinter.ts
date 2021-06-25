@@ -89,7 +89,7 @@ export class AstPrinter extends Visitor<string> {
 
     @indent
     public visitInfixExpressionNode(node: InfixExpressionNode): string {
-        let result: string = `${this.spacing}InfixExpressionNode\n${node.left.accept(this)}\n${this.spacing + "  "}Operator ${node.operator}\n${node.right.accept(this)}`;
+        let result: string = `${this.spacing}InfixExpressionNode\n${node.left.accept(this)}\n${this.spacing}Operator ${node.operator}\n${node.right.accept(this)}`;
         return result;
     }
 
