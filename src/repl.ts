@@ -3,7 +3,6 @@ import { Token } from "./token";
 import { Lexer } from "./lexer";
 import { Parser  } from "./parser";
 import { ProgramNode } from "./ast";
-import { AstPrinter } from "./astPrinter";
 import { Interpreter } from "./interpreter";
 
 const PROMPT = "> ";
