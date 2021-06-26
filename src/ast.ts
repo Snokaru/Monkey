@@ -1,3 +1,5 @@
+import { TokenType } from "./token";
+
 export abstract class Node {
     public abstract accept<T>(visitor: Visitor<T>): T;
 }
@@ -106,7 +108,7 @@ export class IntegerNode implements ExpressionNode {
 
 export class PrefixExpressionNode implements ExpressionNode {
     public constructor(
-        public operator: string,
+        public operator: TokenType,
         public right: ExpressionNode,
     ) {}
 
@@ -118,7 +120,7 @@ export class PrefixExpressionNode implements ExpressionNode {
 export class InfixExpressionNode implements ExpressionNode {
     public constructor(
         public left: ExpressionNode,
-        public operator: string,
+        public operator: TokenType,
         public right: ExpressionNode,
     ) {}
 
@@ -159,3 +161,4 @@ export class CallExpressionNode implements ExpressionNode {
         return visitor.visitCallExpressionNode(this);
     }
 }
+

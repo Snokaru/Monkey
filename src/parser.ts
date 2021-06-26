@@ -179,17 +179,17 @@ export class Parser {
     }
 
     private parsePrefixExpression(): PrefixExpressionNode {
-        let operator = this.expect([TokenType.MINUS, TokenType.BANG]).literal;
+        let operator = this.expect([TokenType.MINUS, TokenType.BANG]).type;
         let right = this.parseExpression(Precedence.PREFIX);
         return new PrefixExpressionNode(operator, right);
     }
 
     private parseInfixExpression(left: ExpressionNode): InfixExpressionNode {
         let precedence: Precedence = this.peekPrecedence();
-        let operator = this.eat().literal;
+        let operator = this.eat().type;
         let right = this.parseExpression(precedence);
 
-        return new InfixExpressionNode(left, operator, right as ExpressionNode);
+        return new InfixExpressionNode(left, operator, right);
     }
     
     private parseIdentifier(): IdentifierNode {
