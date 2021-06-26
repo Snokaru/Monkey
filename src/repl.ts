@@ -4,6 +4,7 @@ import { Lexer } from "./lexer";
 import { Parser  } from "./parser";
 import { ProgramNode } from "./ast";
 import { AstPrinter } from "./astPrinter";
+import { Interpreter } from "./interpreter";
 
 const PROMPT = "> ";
 
@@ -13,20 +14,22 @@ export async function run(): Promise<void> {
         output: process.stdout,
         prompt: PROMPT,
     });
-    rl.prompt();
     for await (const line of rl) {
-        const lexer: Lexer = new Lexer(line);
-        const tokens: Token[] = lexer.getTokens()
-        const parser: Parser = new Parser(tokens);
         try {
+            const lexer: Lexer = new Lexer(line);
+            const tokens: Token[] = lexer.getTokens()
+            const parser: Parser = new Parser(tokens);
             const program: ProgramNode = parser.parse();
-            const printer: AstPrinter = new AstPrinter();
-            console.log(program.accept(printer));
+            const interpreter: Interpreter = new Interpreter(); 
+            for (const statement of program.statements) {
+                console.log(statement.accept(interpreter).value);
+            }
         } catch (error) {
-            console.log("Failed to parse the given tokens.");
             console.log(error.message);
+            rl.prompt();
+            continue;
         }
 
-        rl.prompt();
+            rl.prompt();
     }
 }
