@@ -16,6 +16,11 @@ export class Interpreter extends Visitor<BaseMonkeyObject> {
     constructor() {
         super();
     }
+    
+    public get env() {
+        return this.environment;
+    }
+
 
     public visitLetStatementNode(node: LetStatementNode): BaseMonkeyObject {
         if (this.environment.has(node.identifier))

@@ -4,6 +4,7 @@ import { Lexer } from "./lexer";
 import { Parser  } from "./parser";
 import { ProgramNode } from "./ast";
 import { Interpreter } from "./interpreter";
+import { stat } from "fs";
 
 const PROMPT = "> ";
 
@@ -14,6 +15,7 @@ export async function run(): Promise<void> {
         prompt: PROMPT,
     });
     const interpreter: Interpreter = new Interpreter(); 
+    interpreter.env.newScope();
     rl.prompt();
     for await (const line of rl) {
         try {
@@ -21,7 +23,10 @@ export async function run(): Promise<void> {
             const tokens: Token[] = lexer.getTokens()
             const parser: Parser = new Parser(tokens);
             const program: ProgramNode = parser.parse();
-            console.log(program.accept(interpreter).value);
+            for(const statement of program.statements) {
+                const statementResult = statement.accept(interpreter).value;
+                statementResult && console.log(statementResult);
+            }
         } catch (error) {
             console.log(error.message);
             rl.prompt();
@@ -29,4 +34,5 @@ export async function run(): Promise<void> {
         }
         rl.prompt();
     }
+    interpreter.env.removeScope();
 }
