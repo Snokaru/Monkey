@@ -12,7 +12,7 @@ import {
     IfExpressionNode,
     BlockStatementNode,
     FunctionLiteralNode,
-    CallExpressionNode
+    CallExpressionNode,
 } from "./ast";
 
 const indent = (_target: AstPrinter, _propertyKey: string, descriptor: PropertyDescriptor) => {

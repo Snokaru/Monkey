@@ -13,22 +13,20 @@ export async function run(): Promise<void> {
         output: process.stdout,
         prompt: PROMPT,
     });
+    const interpreter: Interpreter = new Interpreter(); 
+    rl.prompt();
     for await (const line of rl) {
         try {
             const lexer: Lexer = new Lexer(line);
             const tokens: Token[] = lexer.getTokens()
             const parser: Parser = new Parser(tokens);
             const program: ProgramNode = parser.parse();
-            const interpreter: Interpreter = new Interpreter(); 
-            for (const statement of program.statements) {
-                console.log(statement.accept(interpreter).value);
-            }
+            console.log(program.accept(interpreter).value);
         } catch (error) {
             console.log(error.message);
             rl.prompt();
             continue;
         }
-
-            rl.prompt();
+        rl.prompt();
     }
 }
