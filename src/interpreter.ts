@@ -21,7 +21,6 @@ export class Interpreter extends Visitor<BaseMonkeyObject> {
         return this.environment;
     }
 
-
     public visitLetStatementNode(node: LetStatementNode): BaseMonkeyObject {
         if (this.environment.has(node.identifier))
             throw new InterpretError(`Identifier ${node.identifier} is already defined in this scope`);
