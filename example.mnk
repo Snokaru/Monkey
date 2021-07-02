@@ -1,0 +1,15 @@
+let add = fn(x, y) {
+    x + y;
+};
+
+let double = fn(x) {
+    x * 2;
+};
+
+let operation = add(2, 3) - double(2);
+
+if (operation > 2) {
+    return operation + 8;
+} else {
+    return operation;
+}
