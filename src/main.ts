@@ -1,6 +1,6 @@
 import { run as runRepl } from "./repl";
 import { run as runPipeline } from "./interpreterPipeline";
-import fs from "fs";
+import fs = require("fs");
 
 // In the case of no arguments, run the repl
 if (process.argv.length === 1) {
@@ -12,7 +12,7 @@ if (process.argv.length === 1) {
             console.log(`Could not open file ${filename}. Aborting...`);
             return;
         }
-        runPipeline(data);
+        console.log(runPipeline(data).value);
     });
 } else {
     console.log("Usage: monkey (<filename>)");
