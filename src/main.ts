@@ -12,7 +12,7 @@ if (process.argv.length === 1) {
             console.log(`Could not open file ${filename}. Aborting...`);
             return;
         }
-        console.log(runPipeline(data).value);
+        console.log(runPipeline(data)?.value);
     });
 } else {
     console.log("Usage: monkey (<filename>)");
