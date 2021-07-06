@@ -9,7 +9,7 @@ let double = fn(x) {
 let operation = add(2, 3) - double(2);
 
 if (operation > 2) {
-    return operation + 8;
+    return 'the operation is greater than 2';
 } else {
-    return operation;
+    return 'the operation is not greater than 2';
 }
