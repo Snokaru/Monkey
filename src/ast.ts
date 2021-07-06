@@ -14,6 +14,7 @@ export abstract class Visitor<T> {
     public abstract visitPrefixExpressionNode(node: PrefixExpressionNode): T;
     public abstract visitInfixExpressionNode(node: InfixExpressionNode): T;
     public abstract visitBooleanNode(node: BooleanNode): T;
+    public abstract visitStringNode(node: StringNode): T;
     public abstract visitBlockStatementNode(node: BlockStatementNode): T;
     public abstract visitIfExpressionNode(node: IfExpressionNode): T;
     public abstract visitFunctionLiteralNode(node: FunctionLiteralNode): T;
@@ -83,6 +84,16 @@ export class BooleanNode implements ExpressionNode {
     ) {}
     public accept<T>(visitor: Visitor<T>): T {
         return visitor.visitBooleanNode(this);
+    }
+}
+
+export class StringNode implements ExpressionNode {
+    public constructor(
+        public value: string,
+    ) {}
+
+    public accept<T>(visitor: Visitor<T>): T {
+        return visitor.visitStringNode(this);
     }
 }
 

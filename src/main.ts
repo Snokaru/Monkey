@@ -3,7 +3,7 @@ import { run as runPipeline } from "./interpreterPipeline";
 import fs = require("fs");
 
 // In the case of no arguments, run the repl
-if (process.argv.length === 1) {
+if (process.argv.length === 2) {
     runRepl();
 } else if (process.argv.length === 3) {
     const filename = process.argv[2];

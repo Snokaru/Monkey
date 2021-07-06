@@ -9,6 +9,7 @@ import {
     PrefixExpressionNode,
     InfixExpressionNode,
     BooleanNode,
+    StringNode,
     IfExpressionNode,
     BlockStatementNode,
     FunctionLiteralNode,
@@ -96,6 +97,12 @@ export class AstPrinter extends Visitor<string> {
     @indent
     public visitBooleanNode(node: BooleanNode): string {
         let result: string = `${this.spacing}BooleanNode\n${this.spacing + "  "}Value ${node.value}`;
+        return result;
+    }
+
+    @indent
+    public visitStringNode(node: StringNode): string {
+        let result: string = `${this.spacing}StringNode\n${this.spacing + "  "}Value ${node.value}`;
         return result;
     }
     

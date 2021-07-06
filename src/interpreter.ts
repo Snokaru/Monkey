@@ -1,5 +1,28 @@
-import { BlockStatementNode, BooleanNode, CallExpressionNode, ExpressionStatementNode, FunctionLiteralNode, IdentifierNode, IfExpressionNode, InfixExpressionNode, IntegerNode, LetStatementNode, PrefixExpressionNode, ProgramNode, ReturnStatementNode, Visitor } from "./ast";
-import { BaseMonkeyObject, BooleanObject, FunctionObject, IntegerObject, NullObject } from "./interpreterTypes";
+import { 
+    BlockStatementNode,
+    BooleanNode,
+    CallExpressionNode,
+    ExpressionStatementNode,
+    FunctionLiteralNode,
+    IdentifierNode,
+    IfExpressionNode,
+    InfixExpressionNode,
+    IntegerNode,
+    LetStatementNode,
+    PrefixExpressionNode,
+    ProgramNode,
+    ReturnStatementNode,
+    StringNode,
+    Visitor,
+} from "./ast";
+import { 
+    BaseMonkeyObject,
+    BooleanObject,
+    FunctionObject,
+    IntegerObject,
+    StringObject,
+    NullObject,
+} from "./interpreterTypes";
 import { findPrefixOperation, findInfixOperation  } from "./interpreterFunctions";
 import { InterpreterStack } from "./interpreterStack";
 
@@ -91,6 +114,10 @@ export class Interpreter extends Visitor<BaseMonkeyObject> {
 
     public visitBooleanNode(node: BooleanNode): BooleanObject {
         return new BooleanObject(node.value);
+    }
+
+    public visitStringNode(node: StringNode): StringObject {
+        return new StringObject(node.value);
     }
 
     public visitBlockStatementNode(node: BlockStatementNode): BaseMonkeyObject {

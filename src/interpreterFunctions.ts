@@ -1,4 +1,4 @@
-import { IntegerObject, BooleanObject, BaseMonkeyObject } from "./interpreterTypes";
+import { IntegerObject, BooleanObject, BaseMonkeyObject, StringObject } from "./interpreterTypes";
 import { TokenType } from "./token";
 
 export type PrefixOperationFunction = (obj: BaseMonkeyObject) => BaseMonkeyObject;
@@ -118,6 +118,12 @@ const appliableInfixOperations: InfixOperation[] = [
         rightObjectType: IntegerObject.name,
         operation: neqBooleanIntegerObjects,
     },
+    {
+        operator: TokenType.PLUS,
+        leftObjectType: StringObject.name,
+        rightObjectType: StringObject.name,
+        operation: plusStringObjects
+    },
 ];
 
 export function findPrefixOperation(operator: TokenType, obj: BaseMonkeyObject): PrefixOperationFunction | null {
@@ -191,4 +197,8 @@ function neqIntegerBooleanObjects(left: IntegerObject, right: BooleanObject): Bo
 
 function neqBooleanIntegerObjects(left: BooleanObject, right: IntegerObject): BooleanObject {
     return new BooleanObject(true);
+}
+
+function plusStringObjects(left: StringObject, right: StringObject): StringObject {
+    return new StringObject(left.value + right.value);
 }

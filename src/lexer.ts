@@ -69,6 +69,15 @@ export class Lexer {
         } 
         return this.input.slice(startingPosition, this.position + 1);
     }
+    
+    private readString(): string {
+        const startingPosition = this.position;
+
+        while (this.eat() != "'")
+            ;
+        
+        return this.input.slice(startingPosition, this.position + 1);
+    }
 
     private getNextToken(): Token {
         this.skipWhitespace();
@@ -127,6 +136,10 @@ export class Lexer {
                 break;
             case ",":
                 token = { type: TokenType.COMMA, literal: "," };
+                break;
+            case "'":
+                const literal: string = this.readString();
+                token = { type: TokenType.STRING, literal };
                 break;
             case "":
                 token = { type: TokenType.EOF, literal: "" };

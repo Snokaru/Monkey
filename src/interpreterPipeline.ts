@@ -1,13 +1,9 @@
-import readline = require("readline");
 import { Token } from "./token";
 import { Lexer } from "./lexer";
 import { Parser  } from "./parser";
 import { ProgramNode } from "./ast";
 import { Interpreter } from "./interpreter";
-import { stat } from "fs";
 import { BaseMonkeyObject } from "./interpreterTypes";
-
-const PROMPT = "> ";
 
 export function run(fileContent: string): BaseMonkeyObject | null {
     try {

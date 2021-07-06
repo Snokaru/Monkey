@@ -4,7 +4,6 @@ import { Lexer } from "./lexer";
 import { Parser  } from "./parser";
 import { ProgramNode } from "./ast";
 import { Interpreter } from "./interpreter";
-import { stat } from "fs";
 
 const PROMPT = "> ";
 

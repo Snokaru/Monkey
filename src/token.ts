@@ -21,7 +21,9 @@ export enum TokenType {
     NEQ = "NEQ",
 
     IDENT = "IDENT",
+
     INT = "INT",
+    STRING = "STRING",
 
     COMMA = "COMMA",
     SEMICOLON = "SEMICOLON",

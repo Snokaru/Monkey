@@ -11,6 +11,7 @@ import {
     PrefixExpressionNode,
     InfixExpressionNode,
     BooleanNode,
+    StringNode,
     BlockStatementNode,
     IfExpressionNode,
     FunctionLiteralNode,
@@ -59,6 +60,7 @@ export class Parser {
 
         this.registerPrefix(TokenType.IDENT, (): IdentifierNode => this.parseIdentifier());
         this.registerPrefix(TokenType.INT, (): IntegerNode => this.parseInteger());
+        this.registerPrefix(TokenType.STRING, (): StringNode => this.parseString());
         this.registerPrefix(TokenType.BANG, (): PrefixExpressionNode => this.parsePrefixExpression());
         this.registerPrefix(TokenType.MINUS, (): PrefixExpressionNode => this.parsePrefixExpression());
         this.registerPrefix(TokenType.TRUE, (): BooleanNode => this.parseBoolean());
@@ -216,6 +218,13 @@ export class Parser {
         return new BooleanNode(value);
     }
 
+    private parseString(): StringNode {
+        let value = this.expect([TokenType.STRING]).literal;
+        value = value.slice(1, value.length - 1);
+        
+        return new StringNode(value);
+    }
+
     private parseGroupExpression(): ExpressionNode {
         this.expect([TokenType.LPAREN]);
         let expr = this.parseExpression(Precedence.LOWEST);
@@ -302,4 +311,5 @@ export class Parser {
 
         return new CallExpressionNode(fn, args);
     }
+    
 }
