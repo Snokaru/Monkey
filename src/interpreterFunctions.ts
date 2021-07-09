@@ -183,19 +183,19 @@ function neqBooleanObjects(left: BooleanObject, right: BooleanObject): BooleanOb
     return new BooleanObject(left.value !== right.value);
 }
 
-function eqIntegerBooleanObjects(left: IntegerObject, right: BooleanObject): BooleanObject {
+function eqIntegerBooleanObjects(_left: IntegerObject, _right: BooleanObject): BooleanObject {
     return new BooleanObject(false);
 }
 
-function eqBooleanIntegerObjects(left: BooleanObject, right: IntegerObject): BooleanObject {
+function eqBooleanIntegerObjects(_left: BooleanObject, _right: IntegerObject): BooleanObject {
     return new BooleanObject(false);
 }
 
-function neqIntegerBooleanObjects(left: IntegerObject, right: BooleanObject): BooleanObject {
+function neqIntegerBooleanObjects(_left: IntegerObject, _right: BooleanObject): BooleanObject {
     return new BooleanObject(true);
 }
 
-function neqBooleanIntegerObjects(left: BooleanObject, right: IntegerObject): BooleanObject {
+function neqBooleanIntegerObjects(_left: BooleanObject, _right: IntegerObject): BooleanObject {
     return new BooleanObject(true);
 }
 
